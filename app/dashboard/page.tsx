@@ -1,3 +1,4 @@
+import ProductsChart from "@/components/products-chart";
 import Sidebar from "@/components/sidebar"
 import {getCurrentUser} from '@/lib/auth'
   import {prisma } from '@/lib/prisma'
@@ -23,8 +24,28 @@ prisma.product.findMany({
   })
 
 ])
+const now = Date()
 
+const weeklyPoductsData=[]
+for(let i=11; i >= 0;i--){
+  const weekStart=new Date(now);
+  weekStart.setDate(weekStart.getDate()-i*7);
+  weekStart.setHours(0,0,0,0);
 
+  const weekEnd=new Date(weekStart);
+  weekEnd.setDate(weekEnd.getDate()+6);
+  weekEnd.setHours(23,59,59,999);
+  const weekLabel=`${String(weekStart.getMonth()+1).padStart(2,"0")}/${String(weekStart.getDate()+1).padStart(2,"0")}`;
+  const weekProducts=allProducts.filter((product)=>{
+    const productDate=new Date(product.createdAt);
+    return productDate >=weekStart && productDate <=weekEnd;
+  });
+  weeklyPoductsData.push({
+    week:weekLabel,
+    products:weekProducts.length,
+  })
+
+}
 
   const recent=await prisma.product.findMany({
   where:{userId},
@@ -32,7 +53,7 @@ prisma.product.findMany({
   take:5
 })
   const totalValue=allProducts.reduce((sum,product)=>sum+Number(product.price)*Number(product.quantity),0)
-  console.log(totalValue)
+  
   return (
     <div className='min-h-screen bg-gray-50 '><Sidebar currentPath='/dashboard'/>
     <main className="ml-64 p-8">
@@ -74,7 +95,15 @@ prisma.product.findMany({
           </div>
           </div>
       </div>
-
+       {/*inveroty over times */}
+       <div className="bg-white rounded-lg border border-b-gray-200 p-6">
+        <div className="flex items-center justify-between mb-6 ">
+          <h2>New products per week</h2>
+           </div>
+           <div className="h-48">
+            <ProductsChart data={weeklyPoductsData} />
+           </div>
+       </div>
     </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         <div className="bg-white rounded-lg border-gray-200 p-6">
@@ -98,6 +127,13 @@ prisma.product.findMany({
             })}
           </div>
         </div>
+        {/*effeciency sec */}
+        <div className="bg-white rounded-lg border-gray-200 p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-semibold text-gray-900 ">Efficiency</h2>
+          </div>
+        </div>
+
       </div>
     </main>
     </div>
