@@ -24,6 +24,22 @@ prisma.product.findMany({
   })
 
 ])
+
+ const inStackCount= allProducts.filter((p)=>Number(p.quantity)>5).length;
+ const lowStackCount= allProducts.filter((p)=>Number(p.quantity)<=5 && Number(p.quantity)>=1).length;
+  const outStackCount= allProducts.filter((p)=>Number(p.quantity)===0).length;
+
+const inStackPercentage =
+  totalProducts > 0 ? Math.round((inStackCount / totalProducts) * 100) : 0;
+
+const lowStackPercentage =
+  totalProducts > 0 ? Math.round((lowStackCount / totalProducts) * 100) : 0;
+
+const outStackPercentage =
+  totalProducts > 0 ? Math.round((outStackCount / totalProducts) * 100) : 0;
+
+
+
 const now = Date()
 
 const weeklyPoductsData=[]
@@ -132,6 +148,46 @@ for(let i=11; i >= 0;i--){
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-semibold text-gray-900 ">Efficiency</h2>
           </div>
+          <div className="flex items-center justify-center ">
+             <div className="relative w-48 h-48 ">
+               <div className="absolute inset-0 rounded-full border-8 border-gray-200 "></div>
+               <div 
+                className="absolute inset-0 rounded-full border-8 border-purple-600"
+                style={{
+                  clipPath:'polygon(50% 50%,50 0%, 100% 0% , 100% 100% ,0% 100%, 0% 50%)',
+                }}
+               />
+                <div className="absolute inset-0 flex items-center justify-center ">
+                  <div className="text-center">
+                     <div className="text-2xl font-bold text-gray-900 ">{inStackPercentage}%</div>
+                     <div className="text-sm text-gray-600">In Stack</div>
+                  </div>
+               </div>
+
+             </div>
+             </div>
+             <div className="mt-6 space-y-2">
+              <div className="flex items-center justify-between text-sm text-gray-600 ">
+                <div className=" flex items-center space-x-2">
+                  <div className="w-3 h-3 rounded-full bg-purple-200"/>
+                  <span>In Stack ({inStackPercentage}%)</span>
+                </div>
+                </div>
+                 <div className="flex items-center justify-between text-sm text-gray-600 ">
+
+                <div className=" flex items-center space-x-2">
+                  <div className="w-3 h-3 rounded-full bg-purple-600"/>
+                  <span>Low Stack ({lowStackPercentage}%)</span>
+                </div>
+                </div>
+                              <div className="flex items-center justify-between text-sm text-gray-600 ">
+
+                <div className=" flex items-center space-x-2">
+                  <div className="w-3 h-3 rounded-full bg-gray-200"/>
+                  <span>Out of Stack ({outStackPercentage}%)</span>
+                </div>
+              </div>
+             </div>
         </div>
 
       </div>
