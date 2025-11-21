@@ -2,18 +2,30 @@ import Sidebar from "@/components/sidebar";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { deleteProduct } from "@/lib/products";
-import { SearchParams } from "next/dist/server/request/search-params";
 
 
+ import Pagination from "@/components/pagination";
 
-export default async function InventoryPage({searchParams}:{SearchParams:Promise<{q?:string}>}){
+
+export default async function InventoryPage({searchParams,}:{SearchParams:Promise<{q?:string,page?:string}>}){
     const user = await getCurrentUser();
     const userId=user.id;
     const params= await searchParams
     const q =(params.q??'').trim()
+    const where={userId,...(q ? {name:{contains:q,mode:'insensitive' as const}}:{})}
     const totalProducts=await prisma.product.findMany(
-      {  where:{userId,name:{contains:q,mode:'insensitive'}}}
+      {  where,}
     )
+
+
+    const [totalCount,items]= await Promise.all([prisma.product.count({where }), prisma.product.findMany(
+      {  where,}
+    )
+])
+const pageSize=10;
+ const totalPage=Math.max(1,Math.ceil(totalCount/pageSize))
+ const page=Math.max(1,Number(params.page ?? 1))
+
     return <div className="min-h-screen bg-gray-50">
         <Sidebar currentPath="/inventory"/>
         <main className="ml-64 p-8">
@@ -52,7 +64,7 @@ export default async function InventoryPage({searchParams}:{SearchParams:Promise
                         </thead>
 
                         <tbody className="bg-white divide-y divide-gray-200">
-                            {totalProducts.map((product,key)=>(
+                            {items.map((product,key)=>(
                                 <tr key={key} className="hover:bg-gray-50">
                                     <td className="px-6 py-4  text-xs  text-gray-500">{product.name}</td>
                                     <td className="px-6 py-4  text-xs  text-gray-500">{product.sku ||
@@ -77,6 +89,11 @@ export default async function InventoryPage({searchParams}:{SearchParams:Promise
                         </tbody>
                     </table>
                 </div>
+                {totalPage>1 && (<div className="bg-white rounded-lg border-gray-200 p-6">
+                     <Pagination currentPage={page} totalPages={totalPage} baseUrl="/inventory" searchParams={{
+                        q,pageSize:String(pageSize)
+                     }}/>
+                    </div>)}
 
             </div>
         </main>
