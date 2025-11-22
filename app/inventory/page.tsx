@@ -7,7 +7,7 @@ import { deleteProduct } from "@/lib/products";
  import Pagination from "@/components/pagination";
 
 
-export default async function InventoryPage({searchParams,}:{SearchParams:Promise<{q?:string,page?:string}>}){
+export default async function InventoryPage({searchParams,}:{searchParams:Promise<{q?:string,page?:string}>}){
     const user = await getCurrentUser();
     const userId=user.id;
 
