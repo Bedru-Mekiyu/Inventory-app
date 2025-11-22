@@ -1,5 +1,6 @@
 import Sidebar from "@/components/sidebar";
 import { getCurrentUser } from "@/lib/auth";
+import { createProduct } from "@/lib/products";
 import Link from "next/link";
 
 export default async function AddProductPage() {
@@ -18,7 +19,7 @@ export default async function AddProductPage() {
             </div> 
             <div className="max-w-2xl">
                 <div className="bg-white rounded-lg border border-gray-200 p-6">
-                    <form action="" className="space-y-6 ">
+                    <form action={createProduct} className="space-y-6 ">
                         <div>
                             <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">Product Name *</label>
                             <input type="text"  id="name" name="name" required className="w-full px-4 border border-gray-200 rounded-lg focus:border-transparent" placeholder="Enter Product name "/>
@@ -36,11 +37,11 @@ export default async function AddProductPage() {
                         </div>
                          <div>
                             <label htmlFor="sku" className="block text-sm font-medium text-gray-700 mb-2">SKU(optinal)*</label>
-                            <input type="text"  id="sku" name="sku" required className="w-full px-4 border border-gray-200 rounded-lg focus:border-transparent" placeholder="Enter Sku"/>
+                            <input type="text"  id="sku" name="sku"  className="w-full px-4 border border-gray-200 rounded-lg focus:border-transparent" placeholder="Enter Sku"/>
                         </div>
                            <div>
                             <label htmlFor="lowStackAt" className="block text-sm font-medium text-gray-700 mb-2">Low StackAt(optinal) </label>
-                            <input type="number"  min='0' id="lowStackAt" name="lowStackAt" required className="w-full px-4 border border-gray-200 rounded-lg focus:border-transparent" placeholder="Enter low Stack threshold"/>
+                            <input type="number"  min='0' id="lowStackAt" name="lowStackAt"  className="w-full px-4 border border-gray-200 rounded-lg focus:border-transparent" placeholder="Enter low Stack threshold"/>
                         </div>
                         <div className="flex gap-5 ">
                             <button type="submit" className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700">Add Product</button>
