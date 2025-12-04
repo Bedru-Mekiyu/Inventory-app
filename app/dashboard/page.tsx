@@ -2,14 +2,15 @@ import Sidebar from "@/components/sidebar";
 import ProductsChart from "@/components/products-chart";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { Product } from "@prisma/client";
 import { TrendingUp } from "lucide-react";
 
-// Use the Prisma-generated Product type for the fields this page needs
-type DashboardProduct = Pick<
-  Product,
-  "price" | "quantity" | "createdAt" | "lowStackAt"
->;
+// Local type matching the fields selected from Prisma
+type DashboardProduct = {
+  price: unknown; // Prisma Decimal-like; always wrapped in Number(...)
+  quantity: number;
+  createdAt: Date;
+  lowStackAt: number | null;
+};
 
 export default async function DashboardPage() {
   const user = await getCurrentUser();
