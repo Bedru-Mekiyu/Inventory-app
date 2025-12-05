@@ -67,7 +67,7 @@ export default async function InventoryPage({
     }),
   ]);
 
-  const items: InventoryItem[] = itemsRaw.map((p) => ({
+  const items: InventoryItem[] = itemsRaw.map((p: InventoryItem) => ({
     id: p.id,
     name: p.name,
     sku: p.sku,
@@ -152,10 +152,12 @@ export default async function InventoryPage({
                       {product.quantity}
                     </td>
                     <td className="px-6 py-4 text-xs text-gray-500">
-                      <form
-                        action={deleteProduct}
-                      >
-                        <input type="hidden" name="id" value={product.id} />
+                      <form action={deleteProduct}>
+                        <input
+                          type="hidden"
+                          name="id"
+                          value={product.id}
+                        />
                         <button
                           type="submit"
                           className="text-xs text-red-600 hover:underline"
