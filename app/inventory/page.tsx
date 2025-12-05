@@ -2,109 +2,194 @@ import Sidebar from "@/components/sidebar";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { deleteProduct } from "@/lib/products";
+import Pagination from "@/components/pagination";
+import Link from "next/link";
 
+type SearchParams = {
+  q?: string;
+  page?: string;
+};
 
- import Pagination from "@/components/pagination";
+type InventoryItem = {
+  id: string;
+  name: string;
+  sku: string | null;
+  price: unknown;
+  lowStackAt: number | null;
+  quantity: number;
+};
 
+export const metadata = {
+  title: "Inventory",
+};
 
-export default async function InventoryPage({searchParams,}:{searchParams:Promise<{q?:string,page?:string}>}){
-    const user = await getCurrentUser();
-    const userId=user.id;
+export default async function InventoryPage({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}) {
+  const user = await getCurrentUser();
+  const userId = user.id;
 
-    const params= await searchParams
-    const q =(params.q??'').trim()
-    const where={userId,...(q ? {name:{contains:q,mode:'insensitive' as const}}:{})}
-        const pageSize=6;
- 
- const page=Math.max(1,Number(params.page ?? 1))
+  const params = await searchParams;
+  const q = (params.q ?? "").trim();
 
-    const totalProducts=await prisma.product.findMany(
-      {  where,}
-    )
+  const where = {
+    userId,
+    ...(q
+      ? {
+          name: {
+            contains: q,
+            mode: "insensitive" as const,
+          },
+        }
+      : {}),
+  };
 
+  const pageSize = 6;
+  const page = Math.max(1, Number(params.page ?? 1));
 
-    const [totalCount,items]= await Promise.all([prisma.product.count({where }), prisma.product.findMany(
-      {  where,
-        orderBy:{createdAt:'desc'},
-        skip:(page-1) * pageSize,
-       take:pageSize,
-      }
-    )
-])
+  const [totalCount, itemsRaw] = await Promise.all([
+    prisma.product.count({ where }),
+    prisma.product.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+      select: {
+        id: true,
+        name: true,
+        sku: true,
+        price: true,
+        lowStackAt: true,
+        quantity: true,
+      },
+    }),
+  ]);
 
- const totalPage=Math.max(1,Math.ceil(totalCount/pageSize))
- 
+  const items: InventoryItem[] = itemsRaw.map((p) => ({
+    id: p.id,
+    name: p.name,
+    sku: p.sku,
+    price: p.price,
+    lowStackAt: p.lowStackAt,
+    quantity: p.quantity,
+  }));
 
-    return <div className="min-h-screen bg-gray-50">
-        <Sidebar currentPath="/inventory"/>
-        <main className="ml-64 p-8">
-            <div className="mb-8">
-                <div className="flex items-center justify-between">
-                    <div>
-                    <h1 className="text-2xl font-semibold text-gray-900">Inventory</h1>
-                    <p className="text-sm text-gray-500">Manege your porducts and track invetory levels.</p>
-                    </div>
-                </div>
-            </div> 
-            <div className="space-y-6">
-                 {/*search */}
-                 <div className="bg-white rounded-lg border border-gray-200 p-6">
-                    <form className="flex gap-2" action="/inventory" method="GET">
-                    <input name="q" placeholder="Search  products... " className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:border-transparent" />
+  const totalPage = Math.max(1, Math.ceil(totalCount / pageSize));
 
-                      <button className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">Search</button>
-                    </form>
-                 </div>
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Sidebar currentPath="inventory" />
+      <main className="ml-64 p-8">
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-900">Inventory</h1>
+            <p className="text-sm text-gray-500">
+              Manage your products and track inventory levels.
+            </p>
+          </div>
+          <Link
+            href="/add-product"
+            className="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700"
+          >
+            Add product
+          </Link>
+        </div>
 
-                {/*product table  */}
-                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                    <table className="w-full">
-                        <thead className="bg-gray-50">
-                            <tr>
-                                <th className="px-6 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                                <th className="px-6 text-left text-xs font-medium text-gray-500 uppercase">Sku</th>
-                                <th className="px-6 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
-                                <th className="px-6 text-left text-xs font-medium text-gray-500 uppercase">Low Stack At</th>
-                                <th className="px-6 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
-                                <th className="px-6 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <form className="mb-4 flex gap-3">
+            <input
+              name="q"
+              defaultValue={q}
+              placeholder="Search products..."
+              className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm"
+            />
+            <button
+              type="submit"
+              className="rounded-md bg-gray-800 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-gray-900"
+            >
+              Search
+            </button>
+          </form>
 
-                            </tr>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 text-left text-sm">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 font-medium text-gray-500">Name</th>
+                  <th className="px-6 py-3 font-medium text-gray-500">Sku</th>
+                  <th className="px-6 py-3 font-medium text-gray-500">
+                    Price
+                  </th>
+                  <th className="px-6 py-3 font-medium text-gray-500">
+                    Low Stack At
+                  </th>
+                  <th className="px-6 py-3 font-medium text-gray-500">
+                    Quantity
+                  </th>
+                  <th className="px-6 py-3 font-medium text-gray-500">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {items.map((product: InventoryItem) => (
+                  <tr key={product.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 text-xs text-gray-500">
+                      {product.name}
+                    </td>
+                    <td className="px-6 py-4 text-xs text-gray-500">
+                      {product.sku || "-"}
+                    </td>
+                    <td className="px-6 py-4 text-xs text-gray-500">
+                      ${Number(product.price).toFixed(2)}
+                    </td>
+                    <td className="px-6 py-4 text-xs text-gray-500">
+                      {product.lowStackAt ?? "-"}
+                    </td>
+                    <td className="px-6 py-4 text-xs text-gray-500">
+                      {product.quantity}
+                    </td>
+                    <td className="px-6 py-4 text-xs text-gray-500">
+                      <form
+                        action={deleteProduct}
+                      >
+                        <input type="hidden" name="id" value={product.id} />
+                        <button
+                          type="submit"
+                          className="text-xs text-red-600 hover:underline"
+                        >
+                          Delete
+                        </button>
+                      </form>
+                    </td>
+                  </tr>
+                ))}
+                {items.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={6}
+                      className="px-6 py-4 text-sm text-gray-500 text-center"
+                    >
+                      No products found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
 
-                        </thead>
-
-                        <tbody className="bg-white divide-y divide-gray-200">
-                            {items.map((product,key)=>(
-                                <tr key={key} className="hover:bg-gray-50">
-                                    <td className="px-6 py-4  text-xs  text-gray-500">{product.name}</td>
-                                    <td className="px-6 py-4  text-xs  text-gray-500">{product.sku ||
-                                        "-"}</td>
-                                    <td className="px-6 py-4  text-xs  text-gray-500">
-                                        ${Number(product.price).toFixed(2)}</td>
-                                    <td className="px-6 py-4  text-xs  text-gray-500">{product.quantity}</td>
-                                    <td className="px-6 py-4  text-xs  text-gray-500">{product.lowStackAt||'-'}</td>
-                                    <td className="px-6 py-4  text-xs  text-gray-500">
-                                       <form action={async (formData:FormData)=>{
-                                        
-                                    'use server'
-                                        await deleteProduct(formData)
-                                       }} >
-                                    <input type="hidden" name="id" value={product.id}/>
-
-                                        <button className="text-red-600 hover:text-red-900">Delete</button>
-                                        </form> 
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-                {totalPage>1 && (<div className="bg-white rounded-lg border-gray-200 p-6">
-                     <Pagination currentPage={page} totalPages={totalPage} baseUrl="/inventory" searchParams={{
-                        q,pageSize:String(pageSize)
-                     }}/>
-                    </div>)}
-
-            </div>
-        </main>
+          <div className="mt-4">
+            <Pagination
+              currentPage={page}
+              totalPages={totalPage}
+              baseUrl="/inventory"
+              searchParams={{ q }}
+            />
+          </div>
+        </div>
+      </main>
     </div>
+  );
 }
