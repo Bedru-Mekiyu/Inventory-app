@@ -12,6 +12,13 @@ type DashboardProduct = {
   lowStackAt: number | null;
 };
 
+type RecentProduct = {
+  id: string;
+  name: string;
+  quantity: number;
+  lowStackAt: number | null;
+};
+
 export default async function DashboardPage() {
   const user = await getCurrentUser();
   const userId = user.id;
@@ -88,10 +95,16 @@ export default async function DashboardPage() {
     });
   }
 
-  const recent = await prisma.product.findMany({
+  const recent: RecentProduct[] = await prisma.product.findMany({
     where: { userId },
     orderBy: { createdAt: "desc" },
     take: 5,
+    select: {
+      id: true,
+      name: true,
+      quantity: true,
+      lowStackAt: true,
+    },
   });
 
   const totalValue = allProducts.reduce(
