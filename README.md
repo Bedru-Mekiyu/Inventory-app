@@ -259,8 +259,8 @@ inventory/
 │   ├── seed.ts                   # Demo data seeder
 │   └── migrations/               # Migration history
 ├── public/                       # Static assets
+├── .github/workflows/ci.yml      # GitHub Actions CI workflow
 ├── next.config.ts                # Next.js configuration
-├── next.config.mjs               # Server externals config
 ├── prisma.config.ts              # Prisma v7 configuration
 ├── tsconfig.json                 # TypeScript configuration
 ├── eslint.config.mjs             # ESLint flat config
@@ -401,7 +401,7 @@ The build output goes to `.next/`.
 | Node.js | Runtime >= 18 (the build artifact is a Node.js server) |
 | Environment Variables | All `.env` vars must be set in the hosting platform |
 | Prisma | Run `npx prisma migrate deploy` during deployment to apply migrations |
-| Prisma Client | `@prisma/client` is listed in `serverExternalPackages` in `next.config.mjs` |
+| Prisma Client | `@prisma/client` is listed in `serverExternalPackages` in `next.config.ts` |
 
 > **Note:** The Prisma schema does not specify a datasource URL directly (`datasource db { provider = "postgresql" }`), relying on the `DATABASE_URL` env var. The `prisma.config.ts` file also reads `process.env.DATABASE_URL`. Ensure this is set in your deployment environment.
 
