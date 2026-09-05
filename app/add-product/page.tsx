@@ -8,26 +8,7 @@ export const metadata = {
 };
 
 export default async function AddProductPage() {
-  const user = await getCurrentUser();
-
-  async function handleCreate(formData: FormData) {
-    "use server";
-
-    const name = String(formData.get("name") ?? "");
-    const sku = String(formData.get("sku") ?? "");
-    const price = Number(formData.get("price") ?? 0);
-    const lowStackAt = Number(formData.get("lowStackAt") ?? 5);
-    const quantity = Number(formData.get("quantity") ?? 0);
-
-    await createProduct({
-      userId: user.id,
-      name,
-      sku,
-      price,
-      lowStackAt,
-      quantity,
-    } as any);
-  }
+  await getCurrentUser();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -52,7 +33,7 @@ export default async function AddProductPage() {
 
         <form
           className="bg-white rounded-lg border border-gray-200 p-6 space-y-4"
-          action={handleCreate}
+          action={createProduct}
         >
           <div>
             <label className="block text-sm font-medium text-gray-700">

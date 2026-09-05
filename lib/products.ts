@@ -60,7 +60,7 @@ export async function createProduct(formData: FormData) {
         userId: user.id,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Prisma Error:", error);
     throw error;
   }
