@@ -282,8 +282,8 @@ inventory/
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/inventory-app.git
-cd inventory-app
+git clone https://github.com/Bedru-Mekiyu/Inventory-app.git
+cd Inventory-app
 
 # Install dependencies
 npm install
